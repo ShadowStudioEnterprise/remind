@@ -1,0 +1,58 @@
+# =========================================================
+# RE:mind — .gitattributes
+# (stable line endings, sane diffs, clean binary handling)
+# =========================================================
+
+# Default: keep LF in repo (recommended for CI + cross-platform)
+* text=auto eol=lf
+
+# -------------------------
+# Source files
+# -------------------------
+*.py        text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.toml      text eol=lf
+*.ini       text eol=lf
+*.cfg       text eol=lf
+
+# Batch / Windows scripts should stay CRLF
+scripts/*.bat text eol=crlf
+*.cmd         text eol=crlf
+*.ps1         text eol=crlf
+
+# Inno Setup scripts/templates
+*.iss       text eol=crlf
+
+# -------------------------
+# Assets: binary (no diff attempts)
+# -------------------------
+*.ico       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.webp      binary
+*.pdf       binary
+
+# -------------------------
+# Build / release artifacts: binary
+# -------------------------
+*.exe       binary
+*.msi       binary
+*.zip       binary
+*.7z        binary
+*.dll       binary
+*.pyd       binary
+
+# -------------------------
+# Optional: keep build dirs out of GitHub language stats
+# -------------------------
+dist/**     linguist-vendored
+build/**    linguist-vendored
+out/**      linguist-vendored
+installer/** linguist-vendored
+release/**  linguist-vendored
+artifacts/** linguist-vendored

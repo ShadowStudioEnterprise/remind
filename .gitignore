@@ -1,0 +1,110 @@
+# =========================================================
+# RE:mind — repo clean (GitHub + Auto-update)
+# =========================================================
+
+# -------------------------
+# Python / caches
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# -------------------------
+# Virtual envs
+# -------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# -------------------------
+# Build artifacts (PyInstaller / installers)
+# -------------------------
+build/
+dist/
+out/
+installer/
+release/
+artifacts/
+
+# Common generated binaries/installers
+*.exe
+*.msi
+
+# If you ever generate wheels/sdist
+*.whl
+*.tar.gz
+
+# -------------------------
+# Auto-update runtime/download artifacts
+# (downloaded release zips, extracted staging dirs, etc.)
+# -------------------------
+updates/
+update_temp/
+downloaded_update/
+downloads/
+*.zip
+*.7z
+
+# Optional: signatures/hashes created during build/sign step
+*.sha256
+*.sig
+
+# -------------------------
+# App runtime data (logs, crash dumps, user data, backups)
+# -------------------------
+logs/
+crash_reports/
+backups/
+backup/
+userdata/
+data/
+
+*.log
+*.dmp
+*.bak
+
+# SQLite if it appears
+*.sqlite
+*.sqlite3
+*.db
+
+# -------------------------
+# Local secrets / machine-specific config
+# -------------------------
+.env
+.env.*
+settings_local.json
+config_local.json
+
+# Signing-related secrets (certs/keys) if ever stored locally
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Firebase / credentials (commit only templates)
+firebase_config.json
+serviceAccountKey.json
+google-services.json
+
+# -------------------------
+# IDE
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# OS junk
+# -------------------------
+.DS_Store
+Thumbs.db
+desktop.ini

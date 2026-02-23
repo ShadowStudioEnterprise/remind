@@ -1,0 +1,68 @@
+{
+  "app_name": "__DISPLAY_NAME__",
+  "loading": "Cargando…",
+  "ready": "Listo",
+
+  "menu_file": "&Archivo",
+  "menu_settings": "&Configuración",
+  "menu_view": "&Vista",
+  "menu_help": "&Ayuda",
+  "menu_language": "Idioma",
+  "lang_es": "Español",
+  "lang_en": "English",
+
+  "act_reload": "Recargar",
+  "act_reload_tip": "Recargar histórico",
+  "act_notifications": "Notificaciones…",
+  "act_notifications_tip": "Configurar notificaciones",
+  "act_clear_notes": "Limpiar notas",
+  "act_about": "Acerca de",
+  "act_export_pdf": "Exportar PDF",
+  "act_autostart": "Iniciar con Windows",
+  "act_dark_mode": "Modo oscuro",
+
+  "group_record": "Registro",
+  "chk_had": "Sí, he tenido migraña",
+  "lbl_intensity": "Intensidad (1-10):",
+  "lbl_notes": "Notas:",
+  "lbl_state": "Estado:",
+  "ph_notes_migraine": "Notas (trigger, medicación, etc.)",
+  "ph_notes_nomigraine": "¿Cómo te encuentras hoy?",
+  "btn_save": "Guardar",
+  "btn_ok": "Aceptar",
+  "btn_cancel": "Cancelar",
+  "btn_close": "Cerrar",
+
+  "status_saved": "Registro guardado",
+  "status_notif_on": "Notificaciones activadas cada {hours}h",
+  "status_notif_off": "Notificaciones desactivadas",
+  "status_autostart_on": "Inicio automático activado",
+  "status_autostart_off": "Inicio automático desactivado",
+
+  "export_success": "Archivo exportado correctamente",
+  "no_data_title": "Sin datos",
+  "no_data_msg": "No hay datos suficientes para exportar.",
+
+  "tooltip_datetime": "Fecha: {dt}",
+  "tooltip_intensity": "Intensidad: {val}/10",
+
+  "diag_export": "Generar informe de diagnóstico",
+  "diag_export_tip": "Crea un ZIP con logs y configuración para soporte",
+  "diag_export_ok": "Informe de diagnóstico generado",
+  "diag_export_err_title": "Error",
+  "diag_export_err_msg": "No se ha podido generar el informe de diagnóstico.",
+
+  "err_title": "Error",
+  "err_save_failed": "No se pudo guardar: {error}",
+  "err_generic": "Ha ocurrido un error: {error}",
+
+  "about_title": "Acerca de",
+  "about_version": "Versión",
+  "about_description": "Aplicación de monitorización de migrañas.",
+
+  "notif_dialog_title": "Configuración de recordatorios",
+  "notif_enabled": "Activar recordatorios",
+  "notif_hours_suffix": "horas",
+  "act_check_updates": "Buscar actualizaciones…",
+  "act_check_updates_tip": "Comprueba si hay una nueva versión disponible"
+}

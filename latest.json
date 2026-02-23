@@ -1,0 +1,9 @@
+{
+  "product": "RE:mind",
+  "version": "1.2.0",
+  "url_installer": "https://.../REmind_Setup_1.2.0.exe",
+  "sha256": "....",
+  "installer_filename": "REmind_Setup_1.2.0.exe",
+  "published_at": "2026-02-22T10:00:00+00:00",
+  "notes_url": "https://.../notes/1.2.0.html"
+}
