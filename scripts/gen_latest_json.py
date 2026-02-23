@@ -1,24 +1,37 @@
-# scripts/gen_latest_json.py
+from __future__ import annotations
 
-from pathlib import Path
 import hashlib
 import json
-import sys
 import re
 from datetime import datetime, timezone
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
-DIST_INSTALLER = ROOT / "dist_installer"
-OUT = DIST_INSTALLER / "latest.json"
+DIST = ROOT / "dist"
+OUT = ROOT / "docs" / "latest.json"
 
-def load_brand():
+SEMVER_RE = re.compile(r"^\d+(\.\d+){1,3}$")
+
+
+def load_brand_info() -> tuple[str, str, str]:
+    """
+    Returns: (version, github_user, github_repo)
+    """
+    import sys
     sys.path.insert(0, str(SRC))
-    from remind.brand import VERSION, GITHUB_USER, GITHUB_REPO, PRODUCT_NAME
-    return VERSION, GITHUB_USER, GITHUB_REPO, PRODUCT_NAME
 
-def normalize_version(v: str) -> str:
-    return str(v).strip().lstrip("vV")
+    from remind.brand import VERSION, GITHUB_USER, GITHUB_REPO
+
+    version = str(VERSION).strip().lstrip("vV")
+    if not SEMVER_RE.match(version):
+        raise ValueError(f"VERSION inválida en brand.py: {VERSION}")
+
+    if not GITHUB_USER or not GITHUB_REPO:
+        raise ValueError("GITHUB_USER/GITHUB_REPO no definidos en brand.py")
+
+    return version, str(GITHUB_USER).strip(), str(GITHUB_REPO).strip()
+
 
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
@@ -27,40 +40,41 @@ def sha256_file(path: Path) -> str:
             h.update(chunk)
     return h.hexdigest()
 
-def find_installer():
-    installers = sorted(
-        DIST_INSTALLER.glob("REmind_Setup_*.exe"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True
-    )
-    if not installers:
-        raise FileNotFoundError("No se encontró instalador en dist_installer/")
-    return installers[0]
 
-def main():
-    VERSION, GITHUB_USER, GITHUB_REPO, PRODUCT_NAME = load_brand()
+def main() -> None:
+    version, user, repo = load_brand_info()
 
-    version = normalize_version(VERSION)
-    if not re.fullmatch(r"\d+(\.\d+){1,3}", version):
-        raise ValueError(f"VERSION inválida: {VERSION}")
+    exe_name = f"REmind-Setup-v{version}.exe"
+    exe_path = DIST / exe_name
 
-    installer = find_installer()
-    digest = sha256_file(installer)
+    if not exe_path.exists():
+        raise FileNotFoundError(
+            f"No encuentro el instalador en: {exe_path}\n"
+            f"Asegúrate de que Inno Setup genere OutputDir=dist y OutputBaseFilename=REmind-Setup-v{version}"
+        )
 
-    base_release_url = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/download/v{version}"
+    OUT.parent.mkdir(parents=True, exist_ok=True)
 
-    payload = {
-        "product": PRODUCT_NAME,
+    notes_url = f"https://github.com/{user}/{repo}/releases/tag/v{version}"
+    url_installer = f"https://github.com/{user}/{repo}/releases/download/v{version}/{exe_name}"
+
+    manifest = {
         "version": version,
-        "url_installer": f"{base_release_url}/{installer.name}",
-        "sha256": digest,
-        "installer_filename": installer.name,
-        "published_at": datetime.now(timezone.utc).isoformat(),
-        "notes_url": f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/tag/v{version}"
+        "url_installer": url_installer,  # <-- IMPORTANTE: tu updater espera este campo
+        "sha256": sha256_file(exe_path).lower(),
+        "size": exe_path.stat().st_size,
+        "published_at": datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z"),
+        "notes_url": notes_url,
+        "channel": "stable",
     }
 
-    OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-    print("✔ latest.json generado correctamente")
+    OUT.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"✔ docs/latest.json generado para v{version}")
+    print(f"  - url_installer: {url_installer}")
+    print(f"  - sha256: {manifest['sha256']}")
+
 
 if __name__ == "__main__":
     main()

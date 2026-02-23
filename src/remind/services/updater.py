@@ -5,8 +5,11 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from typing import Optional
+from urllib.parse import urlparse
+import sys
 
 import requests
 
@@ -34,10 +37,12 @@ class LatestInfo:
     notes_url: Optional[str] = None
 
 
-LATEST_URL = (
-    f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}"
-    f"/releases/latest/download/latest.json"
-)
+# =========================
+# Patrón A: endpoint fijo (GitHub Pages)
+# Repo: https://github.com/ShadowStudioEnterprise/remind
+# GitHub Pages: https://shadowstudioenterprise.github.io/remind/latest.json
+# =========================
+MANIFEST_URL = f"https://{GITHUB_USER.lower()}.github.io/{GITHUB_REPO}/latest.json"
 
 
 def sha256_file(path: str) -> str:
@@ -49,22 +54,31 @@ def sha256_file(path: str) -> str:
 
 
 def fetch_latest_json(timeout: int = 10) -> LatestInfo:
-    r = requests.get(LATEST_URL, timeout=timeout)
+    # cache-bust + no-cache headers to avoid stale manifests
+    url = f"{MANIFEST_URL}?t={int(time.time())}"
+    headers = {"Cache-Control": "no-cache", "Pragma": "no-cache"}
+
+    r = requests.get(url, timeout=timeout, headers=headers)
     r.raise_for_status()
     data = r.json()
 
     version = normalize_version(data["version"])
-    sha256 = data["sha256"].lower().strip()
+    sha256 = str(data["sha256"]).lower().strip()
 
     if not SEMVER_RE.match(version):
         raise ValueError("latest.json: version inválida")
 
     if not re.fullmatch(r"[0-9a-f]{64}", sha256):
-        raise ValueError("latest.json: sha256 inválido")
+        raise ValueError("latest.json: sha256 inválido (debe ser hex de 64 chars)")
+
+    # Backward compatible: allow url_installer or url
+    url_installer = data.get("url_installer") or data.get("url")
+    if not url_installer or not isinstance(url_installer, str):
+        raise ValueError("latest.json: falta url_installer (o url)")
 
     return LatestInfo(
         version=version,
-        url_installer=data["url_installer"],
+        url_installer=url_installer,
         sha256=sha256,
         notes_url=data.get("notes_url"),
     )
@@ -74,25 +88,75 @@ def is_update_available(latest: str) -> bool:
     return parse_version_tuple(latest) > parse_version_tuple(VERSION)
 
 
+def _safe_filename_from_url(url: str, fallback: str) -> str:
+    parsed = urlparse(url)
+    name = os.path.basename(parsed.path)
+    return name if name else fallback
+
+
 def download_and_verify_installer(info: LatestInfo) -> str:
     tmp_dir = tempfile.gettempdir()
-    filename = os.path.basename(info.url_installer)
-    dest = os.path.join(tmp_dir, filename)
+    fallback_name = f"REmind-Setup-v{info.version}.exe"
+    filename = _safe_filename_from_url(info.url_installer, fallback=fallback_name)
 
-    with requests.get(info.url_installer, stream=True, timeout=30) as r:
+    dest = os.path.join(tmp_dir, filename)
+    dest_part = dest + ".part"
+
+    # Clean previous partial if any
+    try:
+        if os.path.exists(dest_part):
+            os.remove(dest_part)
+    except Exception:
+        pass
+
+    # Stream download to .part then atomic replace
+    with requests.get(info.url_installer, stream=True, timeout=(10, 180)) as r:
         r.raise_for_status()
-        with open(dest, "wb") as f:
+        with open(dest_part, "wb") as f:
             for chunk in r.iter_content(1024 * 1024):
                 if chunk:
                     f.write(chunk)
 
-    digest = sha256_file(dest).lower()
+    digest = sha256_file(dest_part).lower()
     if digest != info.sha256:
-        os.remove(dest)
-        raise ValueError("SHA256 no coincide. Descarga corrupta.")
+        try:
+            os.remove(dest_part)
+        except Exception:
+            pass
+        raise ValueError("SHA256 no coincide. Descarga corrupta o manipulada.")
 
+    os.replace(dest_part, dest)
     return dest
 
 
 def run_installer(path: str) -> None:
-    subprocess.Popen([path], close_fds=True)
+    # Inno Setup common silent flags
+    # Adjust if your installer uses different flags.
+    args = [
+        path,
+        "/VERYSILENT",
+        "/SUPPRESSMSGBOXES",
+        "/NORESTART",
+        "/CLOSEAPPLICATIONS",
+        "/RESTARTAPPLICATIONS",
+    ]
+    subprocess.Popen(args, close_fds=True)
+
+
+def maybe_update() -> Optional[LatestInfo]:
+    """
+    Convenience helper:
+    - fetch manifest from fixed endpoint (GitHub Pages)
+    - compare versions
+    - download + verify installer
+    - run installer (silent)
+    Returns LatestInfo if update started, else None.
+    """
+    info = fetch_latest_json()
+    if not is_update_available(info.version):
+        return None
+
+    installer_path = download_and_verify_installer(info)
+    run_installer(installer_path)
+    sys.exit(0)
+    return info

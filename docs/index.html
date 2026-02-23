@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RE:mind</title>
+
+<style>
+:root{
+  --bg:#2d2e4a;
+  --card:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.12);
+  --text:#ffffff;
+  --muted:rgba(255,255,255,.65);
+  --accent:#f8d64e;
+  --radius:22px;
+}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:60px 20px 80px;
+}
+
+.hero{
+  text-align:center;
+}
+
+.hero img{
+  width:180px;
+  max-width:80%;
+}
+
+.hero h1{
+  margin:30px 0 10px;
+  font-size:40px;
+  font-weight:700;
+}
+
+.hero p{
+  margin:0;
+  color:var(--muted);
+  font-size:16px;
+}
+
+.download{
+  margin-top:30px;
+}
+
+.download a{
+  display:inline-block;
+  padding:14px 22px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:600;
+  background:var(--accent);
+  color:#1b1c2e;
+}
+
+.grid{
+  margin-top:60px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
+}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr;}
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:25px;
+  border-radius:var(--radius);
+}
+
+.card h2{
+  margin-top:0;
+}
+
+.mono{
+  font-family:monospace;
+  font-size:13px;
+  word-break:break-all;
+}
+
+.footer{
+  margin-top:60px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <section class="hero">
+    <img src="assets/logo.png" alt="RE:mind logo">
+    <h1>RE:mind</h1>
+    <p>Monitorización inteligente de migrañas con sistema de actualización automática.</p>
+    <div class="download">
+      <a id="downloadBtn" href="#">Descargar última versión</a>
+    </div>
+  </section>
+
+  <section class="grid">
+
+    <div class="card">
+      <h2>Última versión</h2>
+      <p><strong>Versión:</strong> <span id="version">Cargando…</span></p>
+      <p><strong>Publicado:</strong> <span id="published">—</span></p>
+      <p><strong>SHA256:</strong></p>
+      <div class="mono" id="sha">—</div>
+    </div>
+
+    <div class="card">
+      <h2>Cómo funciona la actualización</h2>
+      <p>
+        La aplicación consulta un endpoint fijo en GitHub Pages (<span class="mono">latest.json</span>).
+      </p>
+      <p>
+        Si existe una versión superior:
+      </p>
+      <ul>
+        <li>Descarga el instalador desde GitHub Releases</li>
+        <li>Verifica su integridad (SHA256)</li>
+        <li>Ejecuta la instalación en modo silencioso</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <div class="footer">
+    <p>
+      Repositorio:
+      <a href="https://github.com/ShadowStudioEnterprise/remind" style="color:#fff;">
+        ShadowStudioEnterprise/remind
+      </a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+async function loadLatest(){
+  try{
+    const res = await fetch("./latest.json?t="+Date.now(),{cache:"no-store"});
+    const data = await res.json();
+
+    document.getElementById("version").textContent = data.version;
+    document.getElementById("published").textContent = data.published_at;
+    document.getElementById("sha").textContent = data.sha256;
+
+    document.getElementById("downloadBtn").href = data.url_installer;
+  }catch(e){
+    document.getElementById("version").textContent="Error cargando latest.json";
+  }
+}
+
+loadLatest();
+</script>
+
+</body>
+</html>
