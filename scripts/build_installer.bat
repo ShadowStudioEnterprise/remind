@@ -33,7 +33,7 @@ REM ==============================
 if exist "scripts\sign_win.bat" (
     echo.
     echo ==============================
-    echo Firmando EXE e instalador...
+    echo Firmando instalador...
     echo ==============================
     call scripts\sign_win.bat
     if errorlevel 1 (
@@ -44,9 +44,10 @@ if exist "scripts\sign_win.bat" (
 ) else (
     echo WARN: scripts\sign_win.bat no existe. Saltando firma.
 )
+
 echo.
 echo ==============================
-echo Generando latest.json (sha256)...
+echo Generando docs\latest.json (sha256)...
 echo ==============================
 python scripts\gen_latest_json.py
 if errorlevel 1 (
@@ -58,7 +59,8 @@ if errorlevel 1 (
 echo.
 echo ==============================
 echo INSTALADOR GENERADO (Y FIRMADO SI APLICA)
-echo dist_installer\
+echo Salida: dist\
+echo Manifiesto: docs\latest.json
 echo ==============================
 pause
 endlocal
